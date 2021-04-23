@@ -2,9 +2,13 @@
 const express=require('express');
 const dataService=require('./services/data.service');
 const session=require('express-session');
+const cors= require('cors');
 
 const app=express();
-
+app.use(cors({
+    origin:'http://192.168.0.16:8080',
+    credentials:true   //to get cookies
+}))
 app.use(express.json());
 
 app.use(session({
@@ -50,32 +54,37 @@ app.post('/',(req,res)=>{
 
 app.post('/register',(req,res)=>{
    // console.log(req.body);
-   const result= dataService.register(req.body.acno,req.body.name,req.body.password);
-   //res.status(result.statusCode);
-    console.log(res.status(result.statusCode).json(result)); 
-});
+ dataService.register(req.body.acno,req.body.name,req.body.password)
+ .then(result=>{res.status(result.statusCode).json(result)});
+
+ });
+  
 
 app.post('/login',(req,res)=>{
    // console.log(req.body);
-   const result= dataService.login(req,req.body.acno,req.body.password);
-  // res.status(result.statusCode);
-    console.log(res.status(result.statusCode).json(result)); 
+   dataService.login(req,req.body.acno,req.body.password)
+   .then(result=>{res.status(result.statusCode).json(result)})
+  
 });
 
 app.post('/deposit',authMiddleware,(req,res)=>{
    // console.log(req.session.currentuser);
-   const result= dataService.deposit(req.body.accno,req.body.pass,req.body.amount);
-//   res.status(result.statusCode);
-//    console.log(res.json(result)); 
-   console.log(res.status(result.statusCode).json(result)); 
+   dataService.deposit(req,req.body.accno,req.body.pass,req.body.amount)
+   .then(result=>{res.status(result.statusCode).json(result)})
+
 });
 
 app.post('/withdraw',authMiddleware,(req,res)=>{
     //console.log(req.body);
-   const result= dataService.withdraw(req.body.accno,req.body.pass,req.body.amount);
-//    res.status(result.statusCode);
-//     console.log(res.json(result)); 
-    console.log(res.status(result.statusCode).json(result)); 
+dataService.withdraw(req,req.body.accno,req.body.pass,req.body.amount)
+   .then(result=>{res.status(result.statusCode).json(result)})
+
+});
+
+app.delete('/deleteAccDetails/:acno',authMiddleware,(req,res)=>{
+   dataService.deleteAccDetails(req.params.acno)
+   .then(result=>{res.status(result.statusCode).json(result)})
+
 });
 
 app.put('/',(req,res)=>{
